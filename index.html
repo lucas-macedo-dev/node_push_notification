@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+
+    <title>Firebase Tutorial</title>
+  </head>
+  <body>
+    <link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css" />
+    <script src="https://www.gstatic.com/firebasejs/7.19.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.19.0/firebase-messaging.js"></script>
+
+    <div class="container">
+      <h1 class="mt-5">Enviar Notificação</h1>
+      <form id="notificationForm" class="mt-3">
+        <div class="mb-3">
+          <label for="title" class="form-label">Título:</label>
+          <input type="text" class="form-control" id="title" name="title" />
+        </div>
+        <div class="mb-3">
+          <label for="body" class="form-label">Corpo:</label>
+          <input type="text" class="form-control" id="body" name="body" />
+        </div>
+        <div class="mb-3">
+          <label for="token" class="form-label">Selecionar Token:</label>
+          <select id="token" name="token" class="form-select">
+            <!-- Os tokens serão preenchidos aqui via JavaScript -->
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary">
+          Enviar Notificação
+        </button>
+      </form>
+    </div>
+    <script>
+      // Your web app's Firebase configuration
+      const firebaseConfig = {
+        apiKey: "",
+        authDomain: "",
+        projectId: "",
+        storageBucket: "",
+        messagingSenderId: "",
+        appId: "",
+      };
+      // Initialize Firebase
+      firebase.initializeApp(firebaseConfig);
+
+      const messaging = firebase.messaging();
+
+      messaging
+        .getToken({
+          vapidKey:
+            "",
+        })
+        .then((currentToken) => {
+          if (currentToken) {
+            console.log("Token: ", currentToken);
+            fetch("/save-token", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ token: currentToken }),
+            })
+              .then((response) => response.text())
+              .then((result) => {
+                console.log(result);
+              })
+              .catch((error) => {
+                console.error("Error saving token:", error);
+              });
+          } else {
+            console.log(
+              "No registration token available. Request permission to generate one."
+            );
+          }
+        })
+        .catch((err) => {
+          console.log("An error occurred while retrieving token. ", err);
+        });
+
+      messaging.onMessage((payload) => {
+        console.log("Message received. ", payload);
+      });
+      // Fetch tokens and populate the select dropdown
+      fetch("/tokens")
+        .then((response) => response.json())
+        .then((tokens) => {
+          const tokenSelect = document.getElementById("token");
+          tokens.forEach((token) => {
+            console.log(token);
+            const option = document.createElement("option");
+            option.value = token.token;
+            option.text = token.token;
+            tokenSelect.appendChild(option);
+          });
+        });
+
+      // Handle form submission
+      document
+        .getElementById("notificationForm")
+        .addEventListener("submit", function (event) {
+          event.preventDefault();
+          const title = document.getElementById("title").value;
+          const body = document.getElementById("body").value;
+          const token = document.getElementById("token").value;
+
+          fetch("/send-notification", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ title, body, token }),
+          })
+            .then((response) => response.text())
+            .then((result) => {
+              alert(result);
+            })
+            .catch((error) => {
+              console.error("Error sending notification:", error);
+            });
+        });
+    </script>
+  </body>
+</html>

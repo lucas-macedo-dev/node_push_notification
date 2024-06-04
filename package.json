@@ -1,0 +1,17 @@
+{
+  "name": "fcm-teste-final-pelo-amor-de-deus",
+  "version": "1.0.0",
+  "description": "push-notification",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bootstrap": "^5.3.3",
+    "express": "^4.19.2",
+    "firebase-admin": "^12.1.1",
+    "mysql": "^2.18.1"
+  }
+}
